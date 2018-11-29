@@ -66,6 +66,9 @@ public:
   
     int getState() {return myState;}
     void setState(int state) { myState = state;}
+    int getStartPixel() { return myStartPixel;}
+    int getEndPixel() { return myEndPixel;}
+    
 // hidden Instance Functions
 protected:
   /// pointer to the current effect's update function encapsulating the effect variables, etc

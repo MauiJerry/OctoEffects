@@ -7,6 +7,7 @@
 
 OctoStrip* OctoStrip::singleton = 0;
 
+int OctoStrip::pixPerRow;
 int OctoStrip::s_nIDGenerator = 1;
 const uint32_t OctoStrip::White = OctoStrip::Color(255,255,255);
 const uint32_t OctoStrip::Black = OctoStrip::Color(0,0,0);
@@ -16,7 +17,9 @@ OctoStrip::OctoStrip(uint32_t numPerStrip, void *frameBuf, void *drawBuf, uint8_
  : OctoWS2811(numPerStrip, frameBuf, drawBuf, config)
 {
   int countPixels = numPerStrip*8;
-    if (singleton != NULL)
+  pixPerRow = numPerStrip;
+    
+  if (singleton != NULL)
     {
         Serial.println("WARNING - multiple OctoStrip declared");
     }
@@ -48,7 +51,7 @@ void OctoStrip::printId(void)
 void OctoStrip::show(void)
 {
     if (!stripChanged) {
-      printId(); Serial.println(" Strip did not Changed");
+//      printId(); Serial.println(" Strip did not Changed");
       return;
     }
 //    printId(); Serial.println("Strip Changed, show it");
@@ -222,14 +225,20 @@ void OctoStrip::setPixelColor(int pixel, int c)
         c2 = color(r,g,b);
     }
     // now call
-      setPixel(pixel,c2);
+//    Serial.printf("setPixelColor %d 0x%x\n", pixel, c2);
+   setPixel(pixel,c2);
+    stripChanged = true;
 
 }
 
 int OctoStrip::getAbsolutePixel(int row, int col)
 {
+    return getPixelAtRowCol(row, col);
+}
+int OctoStrip::getPixelAtRowCol(int row, int col)
+{
     // should check if this is col is next row? nah no safety
-    int absPixNum = getInstance()->numPixels() * row + col;
+    int absPixNum = (getPixPerRow() * row) + col;
     Serial.printf(" row %d col %d => %d\n", row, col,absPixNum);
     return absPixNum;
 }

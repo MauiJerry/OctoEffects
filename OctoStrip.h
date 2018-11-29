@@ -23,6 +23,7 @@
 class OctoStrip: public OctoWS2811 {
 private:
     static OctoStrip *singleton;
+    static int pixPerRow;
     uint8_t brightness;
     boolean stripChanged; /*!< marked TRUE by any effect that changes a pixel */
     static int s_nIDGenerator; /*! class level counter for next instance id */
@@ -34,11 +35,14 @@ private:
      */
 public:
     static OctoStrip* getInstance() { return singleton;}
+    static OctoStrip* octo() { return singleton;}
     OctoStrip(uint32_t numPerStrip, void *frameBuf, void *drawBuf, uint8_t config = WS2811_GRB|WS2811_800kHz);
     int getId() {return myId;} /*!< returns autogen'd id of this strip */
     void setStripChanged(); /*!< marks the strip as Changed */
     void clearStripChanged(); /*!< clears changed flag; strip shown only if changed */
     boolean getStripChanged(); /*!< access internal flag */
+    
+    static int getPixPerRow() { return pixPerRow;}
     
     // some simple functions to effect whole strip
     void clearStrip(); /*!< clears whole strip to black */
@@ -101,10 +105,10 @@ public :
   // functions to cover for missing Adafruit_NeoPixel functions from OctoWS2811
   void setBrightness(uint8_t b ) ;
   uint8_t getBrightness(void);
-    void setPixelColor(int pixel, int color);
+  void setPixelColor(int pixel, int color);
   int getPixelColor(uint32_t pixel) { return getPixel(pixel);}
 
   static int getAbsolutePixel(int row, int col);
-
+  static int getPixelAtRowCol(int row, int col);
 };
 #endif // OCTOSTRIP

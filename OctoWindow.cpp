@@ -40,6 +40,7 @@ OctoWindow::OctoWindow(int startPixel, int len)
     myBgColor = 0; // default is black = 0;
     
     setNoEfx(); // this does rest of setup
+    Serial.printf("OctoWindow %d start %d len %d end %d\n", myId, myStartPixel, len, myEndPixel);
 }
 
 void OctoWindow::printId(void)
@@ -65,12 +66,12 @@ void OctoWindow::printData(void)
 void OctoWindow::updateWindow(void)
 {
     if (!curUpdateFunc) {
-            printId(); Serial.println("    No updateFunc");
+//            printId(); Serial.println("    No updateFunc");
         return; // no effect defined. quick return
     }
     
     // determine if the current Effect time has passed
-    Serial.printf("updateWindow %d currT:%ld lastT: %ld efxDelay: %ld \n",getId(), OctoWindow::currTime, lastTime, effectDelay );
+//    Serial.printf("updateWindow %d currT:%ld lastT: %ld efxDelay: %ld \n",getId(), OctoWindow::currTime, lastTime, effectDelay );
 //    printId();
 //    Serial.print("   curr time:");Serial.print(OctoWindow::currTime);
 //    Serial.print("   lastTime: ");Serial.println(lastTime);
@@ -78,10 +79,10 @@ void OctoWindow::updateWindow(void)
    
     if (OctoWindow::currTime - lastTime < effectDelay)
     {
-        printId(); Serial.println("    Not yet time");
+//        printId(); Serial.println("    Not yet time");
        return;
     }
-    Serial.println("    Effect Delay Done, invoke update");
+//    Serial.println("    Effect Delay Done, invoke update");
     
     // invoke current effect function update
     (this->*curUpdateFunc)();
@@ -92,18 +93,16 @@ void OctoWindow::updateWindow(void)
 
 void OctoWindow::fillColor(uint32_t color)
 {
-//    Serial.print("fill color ");Serial.print(color);
-//    Serial.print(" myStarPixel "); Serial.print(myStartPixel);
-//    Serial.print(" myEndPixel "); Serial.print(myEndPixel);
+//    Serial.printf("ow::fillColor 0x%X myStartPixel %d myEndPixel %d ",color,myStartPixel,myEndPixel);
     for (int i=myStartPixel; i <= myEndPixel; i++)
     {
-//        Serial.print("fill pix ");Serial.println(i);
-       myStrip->setPixelColor(i, color); //set rest of window to black
+//        Serial.printf(" %d", i);
+       myStrip->setPixelColor(i, color);
     }
 //    Serial.println("done fill, setStripChanged");
     myStrip->setStripChanged(); // mark the strip changed
     
-//    Serial.println("fill color done");
+//    Serial.println("  fill color done");
 }
 
 void OctoWindow::fillBlack()
@@ -136,13 +135,14 @@ void OctoWindow::setNoEfx()
     effectCount = 0;
     effectMaxCount=0;
     lastTime = 0;
+//    Serial.printf("Win %d setNoEfx\n",myId);
 }
 
 void OctoWindow::setHoldEfx(int delayTime)
 {
-    printId();
-    Serial.print("   set to use hold effect, delayMs ");Serial.println(delayTime);
-    Serial.print("   currTime:");Serial.println(OctoWindow::currTime);
+//    printId();
+//    Serial.print("   set to use hold effect, delayMs ");Serial.println(delayTime);
+//    Serial.print("   currTime:");Serial.println(OctoWindow::currTime);
     setNoEfx();
     effectDelay = delayTime;
     curUpdateFunc = &OctoWindow::holdUpdateEfx;
@@ -150,26 +150,27 @@ void OctoWindow::setHoldEfx(int delayTime)
 
 void OctoWindow::setSolidColorEfx(uint32_t color, int holdTime)
 {
-//    Serial.println("setSolidColorEfx - fill");
+//    Serial.printf("setSolidColorEfx - fill 0x%x\n", color);
     fillColor(color);
-//    Serial.println("setSolidColorEfx - setHoldEfx");
+//    Serial.printf("  setSolidColorEfx - setHoldEfx %d\n", holdTime);
     setHoldEfx(holdTime);
+//    Serial.print("end setSolidColorEfx"); printData();
 }
 
 void OctoWindow::holdUpdateEfx(void)
 {
-    Serial.print("hold Update - we done  currMillis:");Serial.println(OctoWindow::currTime);
+//    Serial.print("hold Update  currMillis: "); Serial.println(currTime);
     // once we are called the hold time has passed so mark us as done
-//    if (lastTime != 0)
-//        efxDone = true;
-//    else
-//    {
-//        Serial.println("holdEfx : lastTime is 0, need to run at least once");
-        lastTime = OctoWindow::currTime;
-//    }
+    if (lastTime == 0)
+    {
+       lastTime = OctoWindow::currTime;
+    } else if (currTime - lastTime >= effectDelay)
+    {
+//        Serial.println("Hold Efx done");
+        efxDone = true;
+    }
     effectCount++;
-    efxDone = true;
-    Serial.printf("  lastTime: %ld efxCount %d done:%d=%d\n", lastTime, effectCount, efxDone, effectDone());
+//    Serial.printf("  lastTime: %ld efxCount %d done:%d=%d\n", lastTime, effectCount, efxDone, effectDone());
 }
 
 ///////////////
@@ -407,7 +408,7 @@ void OctoWindow::setBlinkEfx(uint32_t color, uint32_t delayTime, int count)
     effectCount++;
     
     blinkUpdateEfx();
-    
+    Serial.printf("Win %d setBlink x%x %d %d\n", myId, color, delayTime,count);
 }
 
 void OctoWindow::blinkUpdateEfx()
